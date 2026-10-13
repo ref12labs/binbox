@@ -1,0 +1,73 @@
+name: Publish staged hexad daemon binaries
+on:
+  push:
+    branches: ['release/hexad-daemon-v*']
+permissions:
+  contents: write
+concurrency:
+  group: binbox-hexad-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate fixed asset allowlist and pins
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          TAG="${BRANCH#release/}"
+          [[ "$TAG" =~ ^hexad-daemon-v[a-f0-9]{16}$ ]]
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          python3 - <<'PY'
+          import hashlib,json,os,pathlib,re
+          root=pathlib.Path("hexad-daemon")
+          m=json.loads((root/"hexad-daemon-manifest.json").read_text())
+          assert m["tag"] == os.environ["BRANCH"].removeprefix("release/")
+          assert m["tag"] == "hexad-daemon-v"+m["build"]
+          assert m["repository"] == "ref12labs/binbox" and m["schema"] == 1
+          assert sorted(a["rid"] for a in m["assets"]) == ["linux-arm64","linux-x64","osx-arm64","win-x64"]
+          names=[]
+          for a in m["assets"]:
+              assert re.fullmatch("[a-f0-9]{64}",a["sha256"])
+              name="hexad-daemon-"+a["rid"]+"-"+a["sha256"]+(".exe" if a["rid"]=="win-x64" else "")
+              assert a["name"]==name
+              assert a["url"]=="https://github.com/ref12labs/binbox/releases/download/"+m["tag"]+"/"+name
+              b=(root/name).read_bytes()
+              assert len(b)==a["size"] and hashlib.sha256(b).hexdigest()==a["sha256"]
+              names.append(name)
+          allowed=set(names+["hexad-daemon-manifest.json"])
+          sums=(root/"SHA256SUMS").read_text().splitlines()
+          seen=[]
+          for line in sums:
+              match=re.fullmatch(r"([a-f0-9]{64})  ([-a-z0-9.]+)",line)
+              assert match and match[2] in allowed
+              assert hashlib.sha256((root/match[2]).read_bytes()).hexdigest()==match[1]
+              seen.append(match[2])
+          assert sorted(seen)==sorted(allowed)
+          assert set(p.name for p in root.iterdir()) == allowed|{"SHA256SUMS"}
+          PY
+          git fetch --depth 1 origin main
+          echo "MAIN_TARGET=$(git rev-parse FETCH_HEAD)" >> "$GITHUB_ENV"
+      - name: Publish once without source or credentials in assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Release exists; refusing overwrite"; exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag exists; refusing reuse"; exit 1
+          fi
+          gh release create "$TAG" hexad-daemon/* --repo "$GITHUB_REPOSITORY" --target "$MAIN_TARGET" \
+            --title "$TAG" --notes "Self-contained hexad daemon binaries, manifest and SHA256SUMS only. Hexad selects the current build and pins hashes; no sign-in needed to download."
+      - name: Delete consumed binary staging branch
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          current=$(git ls-remote --heads origin "refs/heads/$BRANCH" | cut -f1)
+          [[ "$current" == "$GITHUB_SHA" ]]
+          git push origin --delete "$BRANCH"

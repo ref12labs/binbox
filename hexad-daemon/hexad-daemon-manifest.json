@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "build": "91ce0e872bec0c10",
+  "tag": "hexad-daemon-v91ce0e872bec0c10",
+  "repository": "ref12labs/binbox",
+  "assets": [
+    {
+      "rid": "win-x64",
+      "name": "hexad-daemon-win-x64-9f60106ac9036a6f0742784536cf4296e998378b0a133c8cfe23a9accd1995e9.exe",
+      "sha256": "9f60106ac9036a6f0742784536cf4296e998378b0a133c8cfe23a9accd1995e9",
+      "size": 46111971,
+      "url": "https://github.com/ref12labs/binbox/releases/download/hexad-daemon-v91ce0e872bec0c10/hexad-daemon-win-x64-9f60106ac9036a6f0742784536cf4296e998378b0a133c8cfe23a9accd1995e9.exe"
+    },
+    {
+      "rid": "linux-x64",
+      "name": "hexad-daemon-linux-x64-42123e852179aef1acb32ad9e3cc7a18577a2a8558659569d51861f79668ae1b",
+      "sha256": "42123e852179aef1acb32ad9e3cc7a18577a2a8558659569d51861f79668ae1b",
+      "size": 47752302,
+      "url": "https://github.com/ref12labs/binbox/releases/download/hexad-daemon-v91ce0e872bec0c10/hexad-daemon-linux-x64-42123e852179aef1acb32ad9e3cc7a18577a2a8558659569d51861f79668ae1b"
+    },
+    {
+      "rid": "linux-arm64",
+      "name": "hexad-daemon-linux-arm64-992882d305b9c2ecd81c467bb8e4cb10ed8098965389404c12cf06a21050903f",
+      "sha256": "992882d305b9c2ecd81c467bb8e4cb10ed8098965389404c12cf06a21050903f",
+      "size": 45647379,
+      "url": "https://github.com/ref12labs/binbox/releases/download/hexad-daemon-v91ce0e872bec0c10/hexad-daemon-linux-arm64-992882d305b9c2ecd81c467bb8e4cb10ed8098965389404c12cf06a21050903f"
+    },
+    {
+      "rid": "osx-arm64",
+      "name": "hexad-daemon-osx-arm64-e1eb28a47dd4fbc5b2ebca01ddb1b985d8b766023a8e640b52a94602700ada56",
+      "sha256": "e1eb28a47dd4fbc5b2ebca01ddb1b985d8b766023a8e640b52a94602700ada56",
+      "size": 45133725,
+      "url": "https://github.com/ref12labs/binbox/releases/download/hexad-daemon-v91ce0e872bec0c10/hexad-daemon-osx-arm64-e1eb28a47dd4fbc5b2ebca01ddb1b985d8b766023a8e640b52a94602700ada56"
+    }
+  ]
+}
